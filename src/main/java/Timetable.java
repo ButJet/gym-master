@@ -64,3 +64,4 @@ public class Timetable {
         return resultList;
     }
 }
+// проверка расписания
