@@ -7,13 +7,12 @@ import java.util.TreeMap;
 
 public class Timetable {
 
-    // ИСПРАВЛЕНО по 3-й правке: второй уровень — это HashMap для O(1) доступа по времени
     private final Map<DayOfWeek, Map<TimeOfDay, List<TrainingSession>>> timetable;
 
     public Timetable() {
         this.timetable = new HashMap<>();
         for (DayOfWeek day : DayOfWeek.values()) {
-            timetable.put(day, new HashMap<>()); // Инициализируем обычным HashMap
+            timetable.put(day, new HashMap<>()); 
         }
     }
 
@@ -32,15 +31,12 @@ public class Timetable {
         daySchedule.get(time).add(trainingSession);
     }
 
-    // ИСПРАВЛЕНО по 2-й и 3-й правке: создаем TreeMap на лету для сортировки "всего дня"
     public TreeMap<TimeOfDay, List<TrainingSession>> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
         Map<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
         
-        // Перекладываем в TreeMap, чтобы вернуть упорядоченную структуру за O(1) от исходной карты дня
         return new TreeMap<>(daySchedule);
     }
 
-    // ИСПРАВЛЕНО по 3-й правке: теперь этот метод работает за чистые O(1) через HashMap!
     public List<TrainingSession> getTrainingSessionsForDayAndTime(DayOfWeek dayOfWeek, TimeOfDay timeOfDay) {
         Map<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
 
@@ -52,7 +48,7 @@ public class Timetable {
         Map<Coach, Integer> coachCounters = new HashMap<>();
 
         for (DayOfWeek day : DayOfWeek.values()) {
-            // Используем наш метод, чтобы получить отсортированную карту дня
+            
             TreeMap<TimeOfDay, List<TrainingSession>> daySchedule = getTrainingSessionsForDay(day);
             
             for (List<TrainingSession> sessionsAtTime : daySchedule.values()) {
