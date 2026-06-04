@@ -1,7 +1,7 @@
 import java.util.Objects;
 
 public class TimeOfDay implements Comparable<TimeOfDay> {
-    private final int hours;
+    private final int hours; 
     private final int minutes;
 
     public TimeOfDay(int hours, int minutes) {
@@ -13,13 +13,13 @@ public class TimeOfDay implements Comparable<TimeOfDay> {
     public int getMinutes() { return minutes; }
 
     @Override
-    public int compareTo(TimeOfDay o) {
-        if (this.hours != o.hours) {
-            return Integer.compare(this.hours, o.hours);
-        }
-        return Integer.compare(this.minutes, o.minutes);
+    public int compareTo(TimeOfDay other) {
+        int thisTotalMinutes = this.hours * 60 + this.minutes;
+        int otherTotalMinutes = other.getHours() * 60 + other.getMinutes();
+        return Integer.compare(thisTotalMinutes, otherTotalMinutes);
     }
 
+    // ИСПРАВЛЕНИЕ: Добавлен метод equals для корректной работы HashMap
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -28,6 +28,7 @@ public class TimeOfDay implements Comparable<TimeOfDay> {
         return hours == timeOfDay.hours && minutes == timeOfDay.minutes;
     }
 
+    // ИСПРАВЛЕНИЕ: Добавлен метод hashCode для корректной работы HashMap
     @Override
     public int hashCode() {
         return Objects.hash(hours, minutes);
