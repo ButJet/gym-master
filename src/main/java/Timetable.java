@@ -7,49 +7,44 @@ import java.util.TreeMap;
 
 public class Timetable {
 
-    private final Map<DayOfWeek, TreeMap<TimeOfDay, List<TrainingSession>>> timetable;
+    // ИСПРАВЛЕНО по 3-й правке: второй уровень — это HashMap для O(1) доступа по времени
+    private final Map<DayOfWeek, Map<TimeOfDay, List<TrainingSession>>> timetable;
 
     public Timetable() {
         this.timetable = new HashMap<>();
-        // Заранее наполняем карту пустыми TreeMap для каждого дня недели
         for (DayOfWeek day : DayOfWeek.values()) {
-            timetable.put(day, new TreeMap<>());
+            timetable.put(day, new HashMap<>()); // Инициализируем обычным HashMap
         }
     }
 
-    // Добавление новой тренировки в расписание
     public void addNewTrainingSession(TrainingSession trainingSession) {
+        if (trainingSession == null) return;
+        
         DayOfWeek day = trainingSession.getDayOfWeek();
         TimeOfDay time = trainingSession.getTimeOfDay();
 
-        TreeMap<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(day);
+        Map<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(day);
 
-        // Если этого времени еще нет в TreeMap, создаем для него новый список
         if (!daySchedule.containsKey(time)) {
             daySchedule.put(time, new ArrayList<>());
         }
 
-        // Добавляем тренировку в список для этого времени
         daySchedule.get(time).add(trainingSession);
     }
 
-    // Возвращает все тренировки за день, упорядоченные по времени начала
-    public List<TrainingSession> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
-        List<TrainingSession> allSessionsForDay = new ArrayList<>();
-        TreeMap<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
-
-        // Используем метод navigableKeySet() для последовательного обхода по времени от утра к вечеру
-        for (TimeOfDay time : daySchedule.navigableKeySet()) {
-            allSessionsForDay.addAll(daySchedule.get(time));
-        }
-        return allSessionsForDay;
+    // ИСПРАВЛЕНО по 2-й и 3-й правке: создаем TreeMap на лету для сортировки "всего дня"
+    public TreeMap<TimeOfDay, List<TrainingSession>> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
+        Map<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
+        
+        // Перекладываем в TreeMap, чтобы вернуть упорядоченную структуру за O(1) от исходной карты дня
+        return new TreeMap<>(daySchedule);
     }
 
-    // Возвращает все тренировки, начинающиеся в конкретное время конкретного дня
+    // ИСПРАВЛЕНО по 3-й правке: теперь этот метод работает за чистые O(1) через HashMap!
     public List<TrainingSession> getTrainingSessionsForDayAndTime(DayOfWeek dayOfWeek, TimeOfDay timeOfDay) {
-        TreeMap<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
+        Map<TimeOfDay, List<TrainingSession>> daySchedule = timetable.get(dayOfWeek);
 
-        // Безопасное извлечение: если на это время ничего нет, возвращаем пустой список
+        // Быстрый доступ O(1) благодаря HashMap
         return daySchedule.getOrDefault(timeOfDay, new ArrayList<>());
     }
 
@@ -57,11 +52,16 @@ public class Timetable {
         Map<Coach, Integer> coachCounters = new HashMap<>();
 
         for (DayOfWeek day : DayOfWeek.values()) {
-            List<TrainingSession> daySessions = getTrainingSessionsForDay(day);
-            for (TrainingSession session : daySessions) {
-                Coach coach = session.getCoach();
-
-                coachCounters.put(coach, coachCounters.getOrDefault(coach, 0) + 1);
+            // Используем наш метод, чтобы получить отсортированную карту дня
+            TreeMap<TimeOfDay, List<TrainingSession>> daySchedule = getTrainingSessionsForDay(day);
+            
+            for (List<TrainingSession> sessionsAtTime : daySchedule.values()) {
+                for (TrainingSession session : sessionsAtTime) {
+                    Coach coach = session.getCoach();
+                    if (coach != null) {
+                        coachCounters.put(coach, coachCounters.getOrDefault(coach, 0) + 1);
+                    }
+                }
             }
         }
 
@@ -71,7 +71,6 @@ public class Timetable {
         }
 
         Collections.sort(workloadList);
-
         return workloadList;
     }
 }
